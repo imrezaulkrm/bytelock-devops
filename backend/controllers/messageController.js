@@ -7,17 +7,18 @@ const iv = crypto.randomBytes(16); // Initialization Vector
 
 // Custom Encoding Function
 const customEncode = (message, key) => {
+    const iv = crypto.randomBytes(16); // Generate a new IV for each encryption
     const cipher = crypto.createCipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), iv);
-    let encrypted = cipher.update(message, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return `${iv.toString('hex')}:${encrypted}`; // Store IV with the encrypted text
+    let encrypted = cipher.update(message, 'utf8', 'base64'); // Use 'base64' instead of 'hex'
+    encrypted += cipher.final('base64'); // Use 'base64' instead of 'hex'
+    return `${iv.toString('base64')}:${encrypted}`; // Store IV with the encrypted text
 };
 
 // Custom Decoding Function
 const customDecode = (encodedMessage, key) => {
-    const [ivHex, encryptedData] = encodedMessage.split(':');
-    const decipher = crypto.createDecipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), Buffer.from(ivHex, 'hex'));
-    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+    const [ivBase64, encryptedData] = encodedMessage.split(':'); // Split IV and encrypted data
+    const decipher = crypto.createDecipheriv(algorithm, crypto.scryptSync(key, 'salt', 32), Buffer.from(ivBase64, 'base64')); // Use 'base64'
+    let decrypted = decipher.update(encryptedData, 'base64', 'utf8'); // Use 'base64'
     decrypted += decipher.final('utf8');
     return decrypted;
 };
